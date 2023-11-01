@@ -20,12 +20,3 @@ class Window(tk.Tk):
         self.__menu.grid()
         self.__menu.pack(anchor="n", fill="x")
 
-
-
-
-def main():
-    x = Window()
-    x.title("Testing interface")
-    x.mainloop()
-
-main()
