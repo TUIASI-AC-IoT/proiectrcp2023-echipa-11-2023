@@ -3,6 +3,7 @@
 
 # imports
 import tkinter as tk
+from tkinter import ttk as subTK
 
 # Window Class
 class Window(tk.Tk):
@@ -51,4 +52,27 @@ class Window(tk.Tk):
         # current path to directory
         self.__path = tk.Label(self.__menu, text="")
         self.__path.grid(column=5, row=0)
+
+        # sub-menu for file list display
+        self.__files = subTK.Treeview(self, columns=("type", "name"), show="headings", selectmode="browse")
+        self.__files.heading("name", text="Name")
+        self.__files["displaycolumns"] = ("name", )
+        self.__scroll = subTK.Scrollbar(self.__files, orient="vertical", command=self.__files.yview)
+        self.__files.configure(yscrollcommand=self.__scroll.set)
+        self.__scroll.pack(side="right", fill="y")
+        self.__files.pack(fill="x", side="bottom")
+
+        # menu frame
+        self.__actions = tk.Frame(self, highlightcolor="black", highlightthickness=1)
+        self.__actions.pack(fill="x", side="bottom")
+
+        # create directory
+        """To do: add command"""
+        self.__createDir = tk.Button(self.__actions, text="Create directory", command=None)
+        self.__createDir.grid(column=0, row=0)
+
+        # file upload button
+        """To do: add command"""
+        self.__uploadButton = tk.Button(self.__actions, text="Upload file/directory", command=None)
+        self.__uploadButton.grid(column=1, row=0)
 
