@@ -121,3 +121,23 @@ class Message:
                 message.append(i)
 
         return message
+    def addOption(self, option, value):
+        self.__options.append((option, value))
+
+    def addPayload(self, content : bytearray):
+        self.__payload = content
+
+    # Decodarea mesajului primit
+    def decode(self, data : bytearray):
+        if(data[0] & 0xC0 >> 6) != self.__version:
+            raise Exception("Invalid version")
+
+        self.messageType = data[0] & 0x30 >> 4
+        self.tokenLength = data[0] & 0x0F
+
+        self.messageClass = data[1] & 0xE0 >> 5
+        self.messageCode = data[1] & 0x1F
+
+        self.messageId = int.from_bytes(data[2:4], "big")
+        self.token = int.from_bytes(data[8:12], "big")
+
