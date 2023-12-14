@@ -43,6 +43,27 @@ class ClientError(Code):
     Not_Acceptable = 6
 
 
+class ServerError(Code):
+    InternalServerError = 0
+    NotImplemented = 1
+    BadGateway = 2
+    ServiceUnavailable = 3
+    GatewayTimeout = 4
+
+
+class Options(IntEnum):
+    LOCATION_PATH = 8
+    URI_PATH = 11
+    FORMAT = 12
+    ACCEPT = 17
+    BLOCK_1 = 23
+    BLOCK_2 = 27
+
+
+class Content(IntEnum):
+    TEXT_PLAIN = 0
+    BYTES_STREAM = 42
+
 class Message:
     __version = 1
 
