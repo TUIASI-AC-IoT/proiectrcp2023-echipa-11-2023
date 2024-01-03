@@ -64,8 +64,9 @@ class Content(IntEnum):
     TEXT_PLAIN = 0
     BYTES_STREAM = 42
 
+
 class Message:
-    __version = 1
+    __version = 0b01
 
     def __init__(self, message_type=None, message_class=None, message_code=None):
         self.messageType = message_type
@@ -84,8 +85,9 @@ class Message:
         message = bytearray()
 
         # Calculam lungimea tokenului
-        if self.token != 0:
+        if self.token:
             tokenLen = self.token
+            print(tokenLen)
             while tokenLen > 0 and self.tokenLength <= 8:
                 tokenLen >>= 8
                 self.tokenLength += 1
@@ -142,21 +144,43 @@ class Message:
                 message.append(i)
 
         return message
+
+    def addMessageID(self, msg_id):
+        self.messageId = msg_id
+
+    def addToken(self, token):
+        self.token = token
+
     def addOption(self, option, value):
+        """option is optionNumber (0-3 opDelta, 4-7 opLength) +/- extra
+
+        Option value not bigger than 15 bytes"""
         self.__options.append((option, value))
 
-    def addPayload(self, content : bytearray):
+    def addPayload(self, content: bytearray):
         self.__payload = content
 
+    def displayMessage(self):
+        print('-----------------------------\n\t\tHeader')
+        print('Byte1:\n\tVersion: ', self.__version, end='\n\t')
+        print('Type: ', self.messageType, end='\n\t')
+        print('Token Len: ', self.tokenLength)
+        print('Byte2:\n\tCode: ', self.messageCode)
+        print('Byte3-4:\n\tMessageID: ', self.messageId, end='\n-----------------------------\n')
+        print('Token: ', self.token, end='\n-----------------------------\n')
+        print('Options: ', self.__options, end='\n-----------------------------\n')
+        print('Payload: ', self.__payload, end='\n-----------------------------\n')
+
     # Decodarea mesajului primit
-    def decode(self, data : bytearray):
-        if(data[0] & 0xC0 >> 6) != self.__version:
+    def decode(self, data: bytearray):
+        if (data[0] & 0xC0) >> 6 != self.__version:
+            print(data[0] & 0xC0 >> 6)
             raise Exception("Invalid version")
 
-        self.messageType = data[0] & 0x30 >> 4
+        self.messageType = (data[0] & 0x30) >> 4
         self.tokenLength = data[0] & 0x0F
 
-        self.messageClass = data[1] & 0xE0 >> 5
+        self.messageClass = (data[1] & 0xE0) >> 5
         self.messageCode = data[1] & 0x1F
 
         self.messageId = int.from_bytes(data[2:4], "big")

@@ -1,5 +1,6 @@
 from enum import IntEnum
 
+
 class EventType(IntEnum):
     FILE_LIST = 0
     FILE_CONTENT = 1

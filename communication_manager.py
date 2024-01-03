@@ -3,7 +3,6 @@ import message_manager as msm
 import random
 
 
-
 serverIpAddress = ''
 serverPort = 5683
 clientPort = 49153
@@ -30,8 +29,26 @@ class CommunicationManager:
     def __init__(self, ip, port):
         self.address = (ip, port)
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.__socket.bind(('0.0.0.0', clientPort))
+        self.__socket.bind(('127.0.0.1', 5683))
 
     def request(self, message):
         self.__socket.sendto(message, self.address)
 
+    def response(self, message):
+        pass
+
+    # def communication(self):
+    #     try:
+    #         while True:
+    #             print('in while')
+    #             msg = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
+    #             msg_received, addr = self.__socket.recvfrom(1024)
+    #             if not msg_received:
+    #                 print('mesajul nu a fost primit')
+    #                 break
+    #             msg.decode(bytearray(msg_received))
+    #             msg.displayMessage()
+    #     except KeyboardInterrupt:
+    #         print("Server stopped by user.")
+    #     finally:
+    #         self.__socket.close()

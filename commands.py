@@ -47,6 +47,7 @@ class Rename(Command):
 
         self.message.addPayload(bytearray(new_name, 'ascii'))
 
+
 class Move(Command):
 
     def __init__(self, path):
