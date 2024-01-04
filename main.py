@@ -1,3 +1,4 @@
+import select
 import socket
 import time
 
@@ -27,8 +28,13 @@ def Client():
             print(message.encode())
             message.displayMessage()
             client.sendto(message.encode(), ('127.0.0.1', 5683))
-            # data, _ = client.recvfrom(1024)
-            # print('Client received:', data.decode())
+            read, _, _ = select.select([client], [], [], 1)
+            if read:
+                data, _ = client.recvfrom(4096)
+                data = bytearray(data)
+                msg = msm.Message()
+                msg.decode(data)
+                msg.displayMessage()
         except Exception as e:
             print(f'Error: {e}')
 
