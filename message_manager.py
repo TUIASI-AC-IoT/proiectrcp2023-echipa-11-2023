@@ -119,8 +119,8 @@ class Message:
                     message.append(valueLength - 13)                    # |=> appending 2 bytes
                 else:
                     message.append(((option - prevOption) << 4) + 14)
-                    # message.extend(valueLength.to_bytes(valueLength - 269, "big"))
-                    message.append(valueLength - 269)
+                    message.extend(valueLength.to_bytes(valueLength - 269, "big"))
+                    # message.append(valueLength - 269)
 
                 prevOption = option
             else:
@@ -164,9 +164,20 @@ class Message:
         """option is optionNumber (0-3 opDelta, 4-7 opLength) +/- extra
 
         Option value not bigger than 15 bytes"""
+        if type(value) is int:
+            val = value
+            l = 0
+            while val > 0:      # calculate de nr of bytes necessary to represent value
+                val >>= 8
+                l += 1
+            value = value.to_bytes(l, "big")
+        if type(value) is str:
+            value = bytes(value, 'ascii')
         self.__options.append((option, value))
 
     def addPayload(self, content: bytearray):
+        """Adds the paylaod"""
+        print('\n\nmessage_manager, addPayload')
         self.__payload = content
 
     def displayMessage(self):
@@ -184,7 +195,7 @@ class Message:
         print('Payload: ', self.__payload, end='\n-----------------------------\n')
 
     # Decodarea mesajului primit
-    def decode(self, data: bytes):
+    def decode(self, data: bytearray):
         print('\n\nmessage_manager, decode')
         """Decodes the data from bytes to message object"""
 

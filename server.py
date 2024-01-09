@@ -28,7 +28,6 @@ class Server:
                     sleep(1)
                     msg = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
                     msg.decode(msg_received)
-                    print('disp?')
                     msg.displayMessage()
                     msg.addPayload(bytearray('Echo', encoding="ascii"))
                     send = msg.encode()

@@ -18,6 +18,7 @@ def Client():
     message.addMessageID(1234)
     message.addToken(0x8)
     message.addOption(8, 'home/')
+    message.addOption(11, 'pingu/angelica')
     message.displayMessage()
     # server.request(message.encode())
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
