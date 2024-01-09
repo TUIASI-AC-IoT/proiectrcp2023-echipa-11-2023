@@ -3,8 +3,9 @@ import message_manager as msm
 import random
 
 
-serverIpAddress = ''
+serverIpAddress = '127.0.0.1'
 serverPort = 5683
+clientIpAddress = '127.0.0.1'
 clientPort = 49153
 
 # Confirmable by default

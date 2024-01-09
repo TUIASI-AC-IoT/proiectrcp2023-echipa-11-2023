@@ -1,17 +1,19 @@
 import select
 import socket
+import threading
 import time
 
 import interface
 import random
 import communication_manager as cl
+
+from server import ServerRun
+# importul executa fisierul si stocheaza .pyc in pycache
+
 import message_manager as msm
 
 
 def Client():
-
-    # server = srv.CommunicationManager('localhost', 5683)
-    # messageId = int(random.random() * 210902)
 
     message = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
 
@@ -19,6 +21,9 @@ def Client():
     message.addToken(0x8)
     message.addOption(8, 'home/')
     message.addOption(11, 'pingu/angelica')
+    message.addOption(23, 1000)
+    message.addOption(23, 2001)
+    message.addPayload(bytearray('pinguuu', 'ascii'))
     message.displayMessage()
     # server.request(message.encode())
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -45,9 +50,14 @@ def Client():
 
 if __name__ == '__main__':
 
-    Client()
+    # server part
+    threading.Thread(target=ServerRun, daemon=True).start()
 
-    # GUI = interface.Window()
-    # GUI.title("CoAP - client")
-    # GUI.mainloop()
+    # client part
+    threading.Thread(target=Client, daemon=True).start()
+
+
+    GUI = interface.Window()
+    GUI.title("CoAP - client")
+    GUI.mainloop()
 

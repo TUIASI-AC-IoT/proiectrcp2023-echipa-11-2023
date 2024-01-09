@@ -26,18 +26,37 @@ class Server:
                     print(msg_received, end='3\n')
 
                     sleep(1)
-                    msg = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
-                    msg.decode(msg_received)
-                    msg.displayMessage()
-                    msg.addPayload(bytearray('Echo', encoding="ascii"))
-                    send = msg.encode()
-                    self.__socket.sendto(send, ('127.0.0.1', 49153))
+
+                    # daca mesajul nu e bun, returnam un mesaj de tip RST
+                    try:
+                        msg = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
+                        msg.decode(msg_received)
+                        # prin1
+                        msg.displayMessage()
+                        msg.addPayload(bytearray('Echo', encoding="ascii"))
+                        send = msg.encode()
+                        self.__socket.sendto(send, ('127.0.0.1', 49153))
+                    except Exception as e:
+                        # ceva ciudat aici la setarea versiunii?
+                        # la decode in client da eroarea Invalid Version
+                        msg = msm.Message(msm.Type.Reset, msm.Class.Server_Error, msm.Method.EMPTY)
+                        msg.addMessageID(1)
+                        msg.addToken(0x1)
+                        msg.addPayload(bytearray(f'Error: {e}', encoding="ascii"))
+                        msg.displayMessage()
+                        send = msg.encode()
+                        self.__socket.sendto(send, ('127.0.0.1', 49153))
+                        print(f'Error: {e}')
+
+
         except KeyboardInterrupt:
             print("Server stopped by user.")
         finally:
             self.__socket.close()
 
 
-server = Server('127.0.0.1', 5683)
+def ServerRun():
+    server = Server('127.0.0.1', 5683)
+    server.communication()
 
-server.communication()
+# ServerRun()

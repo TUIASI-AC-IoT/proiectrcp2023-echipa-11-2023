@@ -56,8 +56,8 @@ class Options(IntEnum):
     URI_PATH = 11
     FORMAT = 12
     ACCEPT = 17
-    BLOCK_1 = 23
-    BLOCK_2 = 27
+    BLOCK_1 = 27
+    BLOCK_2 = 23
 
 
 class Content(IntEnum):
@@ -69,14 +69,25 @@ class Message:
     __version = 0b01
 
     def __init__(self, message_type=None, message_class=None, message_code=None):
+        print('\n\nmessage_manager, __init__')
+
+        # tipul mesajului CON-00, NON-01, ACK-10, RST-11
         self.messageType = message_type
+
+        # clasa mesajului (bitii 0-2) Request-0, Success-2, Client/Server Error Response-4/5
         self.messageClass = message_class
+
+        # retine codul Request{GET-1.01, POST-1.02, PUT-1.03, DELETE-1.04}
+        # Response{CREATED-2.01, DELETED-2.02, VALID-2.03}
         self.messageCode = message_code
+
         self.__options = list()
         self.__payload = bytearray()
 
         self.messageId = None
         self.token = None
+
+        # nr de bytes din token (max 8)
         self.tokenLength = 0
 
     # Functia de encode
@@ -155,15 +166,18 @@ class Message:
         return message
 
     def addMessageID(self, msg_id):
+        print('\n\nmessage_manager, addMessageID')
         self.messageId = msg_id
 
     def addToken(self, token):
+        print('\n\nmessage_manager, addToken')
         self.token = token
 
     def addOption(self, option, value):
         """option is optionNumber (0-3 opDelta, 4-7 opLength) +/- extra
 
         Option value not bigger than 15 bytes"""
+        print('\n\nmessage_manager, addOption')
         if type(value) is int:
             val = value
             l = 0
