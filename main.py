@@ -1,11 +1,11 @@
+import queue
 import select
 import socket
 import threading
 import time
-
 import interface
-import random
-import communication_manager as cl
+import communication_manager as cm
+from communication_manager import CommunicationManager as CM
 
 from server import ServerRun
 # importul executa fisierul si stocheaza .pyc in pycache
@@ -14,7 +14,6 @@ import message_manager as msm
 
 
 def Client():
-
     message = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
 
     message.addMessageID(1234)
@@ -47,17 +46,22 @@ def Client():
         time.sleep(1)
     client.close()
 
-
 if __name__ == '__main__':
 
+    commandQ = queue.Queue()
+    eventQ = queue.Queue()
     # server part
     threading.Thread(target=ServerRun, daemon=True).start()
 
     # client part
     threading.Thread(target=Client, daemon=True).start()
 
+    # command listener
+    # de mutat clientul in communication manager
+    # cm = CM(commandQ, eventQ)
+    # cm.ComLis()
 
-    GUI = interface.Window()
+    GUI = interface.Window(commandQ, eventQ)
     GUI.title("CoAP - client")
     GUI.mainloop()
 

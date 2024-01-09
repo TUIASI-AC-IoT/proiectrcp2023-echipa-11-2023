@@ -69,7 +69,7 @@ class Message:
     __version = 0b01
 
     def __init__(self, message_type=None, message_class=None, message_code=None):
-        print('\n\nmessage_manager, __init__')
+        print('\nmessage_manager, __init__')
 
         # tipul mesajului CON-00, NON-01, ACK-10, RST-11
         self.messageType = message_type
@@ -166,7 +166,7 @@ class Message:
         return message
 
     def addMessageID(self, msg_id):
-        print('\n\nmessage_manager, addMessageID')
+        print('\nmessage_manager, addMessageID')
         self.messageId = msg_id
 
     def addToken(self, token):
@@ -177,7 +177,7 @@ class Message:
         """option is optionNumber (0-3 opDelta, 4-7 opLength) +/- extra
 
         Option value not bigger than 15 bytes"""
-        print('\n\nmessage_manager, addOption')
+        print('\nmessage_manager, addOption')
         if type(value) is int:
             val = value
             l = 0
@@ -191,12 +191,12 @@ class Message:
 
     def addPayload(self, content: bytearray):
         """Adds the paylaod"""
-        print('\n\nmessage_manager, addPayload')
+        print('\nmessage_manager, addPayload')
         self.__payload = content
 
     def displayMessage(self):
         """Displays a Message object"""
-        print('\n\nmessage_manager, displayMessage')
+        print('\nmessage_manager, displayMessage')
 
         print('-----------------------------\n\t\tHeader')
         print('Byte1:\n\tVersion: ', self.__version, end='\n\t')
@@ -210,7 +210,7 @@ class Message:
 
     # Decodarea mesajului primit
     def decode(self, data: bytearray):
-        print('\n\nmessage_manager, decode')
+        print('\nmessage_manager, decode')
         """Decodes the data from bytes to message object"""
 
         def fun(opLen, data, offset, offset2):

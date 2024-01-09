@@ -1,15 +1,28 @@
-
-
-
-# imports
+import queue
+import threading
 import tkinter as tk
 from tkinter import ttk as subTK
 
-# Window Class
+import commands as cmd
+import events
+
+
 class Window(tk.Tk):
-    def __init__(self):
+    def __init__(self, commandQ: queue.Queue, eventQ: queue.Queue):
         super().__init__()
         """To be updated in the future"""
+        print('\ninterface, __init__')
+
+        self.commmandQ = commandQ
+        self.eventQ = eventQ
+
+        self.event_listener = threading.Thread(target=self.EventListener, daemon=True)
+        self.event_listener.start()
+
+        # calea catre locatia curenta
+        self.current_path = []
+        self.current_path.append('')
+
         self.geometry("800x400")    # initial 800x200
         self.grid()
 
@@ -24,12 +37,12 @@ class Window(tk.Tk):
         self.__back.grid(column=0, row=0)
 
         # current path to directory
-        self.__path = tk.Label(self.__menu, text="__current_path__")
+        self.__path = tk.Label(self.__menu, text=f"Downloads/{self.current_path[0]}")
         self.__path.grid(column=1, row=0)
 
         # refresh button
         """To do: add command"""
-        self.__refresh = tk.Button(self.__menu, text="Refresh", command=None)
+        self.__refresh = tk.Button(self.__menu, text="Refresh", command=self.Refresh)
         self.__refresh.grid(column=3, row=0)
 
         # ip display
@@ -73,3 +86,12 @@ class Window(tk.Tk):
         self.__uploadButton = tk.Button(self.__actions, text="Upload file/directory", command=None)
         self.__uploadButton.grid(column=1, row=0)
 
+    def Refresh(self):
+        """Refresh"""
+        print('\ninterface, Refresh')
+        self.commmandQ.put(cmd.ListDirectory(self.current_path))
+
+    def EventListener(self):
+        print('\ninterface, EventListener')
+        while True:
+            event: events.Event = self.eventQ.get()
