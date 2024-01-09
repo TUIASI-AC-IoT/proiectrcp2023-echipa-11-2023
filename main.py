@@ -15,8 +15,8 @@ def Client():
 
     message = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
 
-    message.addMessageID(int(random.randint(0, 65535)))
-    message.addToken(0x11)
+    message.addMessageID(1234)
+    message.addToken(0x8)
     message.addOption(8, 'home/')
     message.displayMessage()
     # server.request(message.encode())
@@ -26,15 +26,15 @@ def Client():
     for i in range(10):
         try:
             print(message.encode())
-            message.displayMessage()
+            # message.displayMessage()
             client.sendto(message.encode(), ('127.0.0.1', 5683))
-            read, _, _ = select.select([client], [], [], 1)
-            if read:
-                data, _ = client.recvfrom(4096)
-                data = bytearray(data)
-                msg = msm.Message()
-                msg.decode(data)
-                msg.displayMessage()
+            # read, _, _ = select.select([client], [], [], 1)
+            # if read:
+            data, _ = client.recvfrom(4096)
+            data = bytearray(data)
+            msg = msm.Message()
+            msg.decode(data)
+            msg.displayMessage()
         except Exception as e:
             print(f'Error: {e}')
 

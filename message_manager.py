@@ -81,13 +81,13 @@ class Message:
 
     # Functia de encode
     def encode(self):
-
+        print('\n\nmessage_manager, encode')
         message = bytearray()
 
-        # Calculam lungimea tokenului
+        # Calculam lungimea tokenului (in octeti)
         if self.token:
+            self.tokenLength = 0
             tokenLen = self.token
-            print(tokenLen)
             while tokenLen > 0 and self.tokenLength <= 8:
                 tokenLen >>= 8
                 self.tokenLength += 1
@@ -102,7 +102,7 @@ class Message:
         for (option, value) in self.__options:
             valueLength = 0
             # print(type(val.value))
-            if type(value) is int:
+            if type(value) is int:  # opaque integer (in block1 and 2)
                 if value != 0:
                     value_len = value
                     while value_len > 0:
@@ -111,14 +111,15 @@ class Message:
             else:
                 valueLength = len(value)
 
-            if (option - prevOption) < 13:
+            if (option - prevOption) < 13:  # option delta < 13
                 if valueLength < 13:
-                    message.append(((option - prevOption) << 4) + valueLength)
+                    message.append(((option - prevOption) << 4) + valueLength)  # appending 1 byte
                 elif valueLength < 269:
-                    message.append(((option - prevOption) << 4) + 13)
-                    message.append(valueLength - 13)
+                    message.append(((option - prevOption) << 4) + 13)   # |
+                    message.append(valueLength - 13)                    # |=> appending 2 bytes
                 else:
                     message.append(((option - prevOption) << 4) + 14)
+                    # message.extend(valueLength.to_bytes(valueLength - 269, "big"))
                     message.append(valueLength - 269)
 
                 prevOption = option
@@ -137,9 +138,17 @@ class Message:
 
                 prevOption = option
 
+            # appending the value
+            if type(value) is str:
+                for b in bytes(value, 'ascii'):
+                    message.append(b)
+            else:
+                for b in value:
+                    message.append(b)
+
         # append la payload daca exista
         if len(self.__payload) != 0:
-            message.append(255)
+            message.append(255)     # append la payload marker (0xFF)
             for i in self.__payload:
                 message.append(i)
 
@@ -162,6 +171,8 @@ class Message:
 
     def displayMessage(self):
         """Displays a Message object"""
+        print('\n\nmessage_manager, displayMessage')
+
         print('-----------------------------\n\t\tHeader')
         print('Byte1:\n\tVersion: ', self.__version, end='\n\t')
         print('Type: ', self.messageType, end='\n\t')
@@ -173,12 +184,31 @@ class Message:
         print('Payload: ', self.__payload, end='\n-----------------------------\n')
 
     # Decodarea mesajului primit
-    def decode(self, data: bytearray):
-        """Decodes the data from bytearray to message object"""
+    def decode(self, data: bytes):
+        print('\n\nmessage_manager, decode')
+        """Decodes the data from bytes to message object"""
+
+        def fun(opLen, data, offset, offset2):
+            if opLen < 13:  # lungime normala
+                opVal = data[offset + offset2:offset + offset2 + opLen]  # getin the option Value
+                offset += offset2 + opLen  # incrementing to the byte after the option
+            elif opLen == 13:  # OpLen = nextByteValue + 13, celalalt byte = OpLen extended
+                opLen = data[offset + offset2] + 13
+                opVal = data[offset + offset2 + 1:offset + offset2 + 1 + opLen]
+                offset += offset2 + 1 + opLen
+            elif opLen == 14:  # OpLen are nevoie de 2 bytes(1 e full) + 4 biti in OpLen
+                opLen = int.from_bytes(data[offset + offset2:offset + offset2 + 2], "big") + 269  # 255 + 14
+                opVal = data[offset + offset2 + 2:offset + offset2 + 2 + opLen]
+                offset += offset2 + 2 + opLen
+            else:
+                raise Exception("Invalid option length value!")
+
+            return opVal, opLen, offset
+
         # verifica versiunea (primii 2 biti din header-primul byte adica data[0])
-        if (data[0] & 0xC0) >> 6 != self.__version:
+        if ((data[0] & 0xC0) >> 6) != self.__version:
             print(data[0] & 0xC0 >> 6)
-            raise Exception("Invalid version")
+            raise Exception("Invalid Version")
 
         # retine tipul mesajului CON-00, NON-01, ACK-10, RST-11
         self.messageType = (data[0] & 0x30) >> 4
@@ -195,83 +225,39 @@ class Message:
         # retine messageID - ultimii 2 bytes din header
         self.messageId = int.from_bytes(data[2:4], "big")   # endian little/big
 
-        # extragem tokenul
-        if not self.tokenLength:        # valorile de la 1001 - 1111 sunt rezervate
-            pass        # token null
-        elif self.tokenLength < 9:
-            self.token = int.from_bytes(data[4:4 + self.tokenLength], "big")
+        # Parsing token
+        if self.tokenLength == 0:
+            pass
+        elif self.tokenLength < 9:   # valorile de la 1001 - 1111 sunt rezervate
+            self.token = 0
+            for byte in data[4:4 + self.tokenLength]:    # slice-ing from index 4 to index 4+tklen
+                self.token = (self.token << 8) | byte   # da append la fiecare byte din token
         else:
-            raise Exception("fun decode():\nValoarea token_length e rezervata!\n")
+            raise Exception("Use of reserved token length values!")
 
-        # extragem optinuile
-        if len(data) > 4 + self.tokenLength:    # verificam existenta optiunilor/payload
-            offset = 4 + self.tokenLength        # ducem indexul la inputul campului de optiuni
-            opDeltaPrev = 0         # initislizam opDelta recedent
-            while offset < len(data):      # iteram orin optiuni
-                opDelta = (data[offset] & 0xF0) >> 4    # primii 4 biti din octet
-                opLen = data[offset] & 0x0F
+        # Parsing Options (Check RFC7252 page 18 for details)
+        if len(data) > 4 + self.tokenLength:     # verificam existenta optiunilor/payload
+            index = 4 + self.tokenLength         # ducem indexul la inputul campului de optiuni
+            opDeltaPrev = 0                 # setam opDelta previous pe 0
+            while index < len(data):        # iteram orin optiuni
+                opDelta = (data[index] & 0xF0) >> 4     # primii 4 biti din octet
+                opLen = data[index] & 0x0F          # urmatorii 4 biti din octec
                 if opDelta < 13:
-                    opDeltaPrev += opDelta       # adunam optionDelta previous
-                    if opLen < 13:      # lungime normala
-                        opValue = data[offset + 1:offset + 1 + opLen]   # getin the option Value
-                        offset += opLen + 1     # incrementing to the byte after the option
-                    elif opLen == 13:       # OpLen = nextByteValue + 13, celalalt byte = OpLen extended
-                        opLen += data[offset + 1]
-                        offset += 2
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    elif opLen == 14:   # OpLen are nevoie de 2 bytes(1 e full) + 4 biti in OpLen
-                        opLen += int.from_bytes(data[offset + 1:offset + 3], "big") + 255
-                        offset += 3
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    else:
-                        raise Exception("fun decode():\nValoarea option_length e invalida!\n")
+                    opDeltaPrev += opDelta      # adunam optionDelta previous
+                    opVal, opLen, index = fun(opLen, data, index, 1)
                 elif opDelta == 13:     # spatiu insuficient pe 4 biti, extindem pe 1 byte din opDelta extended
-                    opDeltaPrev += data[offset + 1] + opDelta
-                    if opLen < 13:
-                        offset += 2
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    elif opLen == 13:
-                        opLen += data[offset + 2]
-                        offset += 3
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    elif opLen == 14:
-                        opLen += int.from_bytes(data[offset + 2:offset + 4], "big") + 255
-                        opLen += 4
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    else:
-                        raise Exception("fun decode():\nValoarea option_length e invalida!\n")
-                elif opDelta == 14:
-                    opDeltaPrev += int.from_bytes(data[offset + 1:offset + 3], "big") + 255
-                    if opLen < 13:
-                        offset += 3
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    elif opLen == 13:
-                        offset += 3
-                        opLen += data[offset]
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    elif opLen == 14:
-                        offset += 3
-                        opLen += int.from_bytes(data[offset:offset + 2], "big") + 255
-                        offset += 2
-                        opValue = data[offset:offset + opLen]
-                        offset += opLen
-                    else:
-                        raise Exception("fun decode():\nValoarea option_length e invalida!\n")
+                    opVal, opLen, index = fun(opLen, data, index, 2)
+                elif opDelta == 14:     # sunt necesari 2 octeti pentru reprezentare (2 bytes) din Opdelta exrended
+                    opDeltaPrev += int.from_bytes(data[index + 1:index + 3], "big") + 269
+                    opVal, opLen, index = fun(opLen, data, index, 3)
                 else:
                     if opLen == 15:     # payload marker (arata sfarsitul sectiunii de optiunui) restul mesajului se pune in payload
-                        self.__payload = data[offset + 1:len(data)]
+                        self.__payload = data[index + 1:len(data)]
                         break
                     else:
-                        raise Exception("fun decode():\nValoarea option_length e invalida!\n")
+                        raise Exception("Invalid option length value!")
 
-                self.addOption(opDeltaPrev, opValue)  # se adauga optiunea in coada de optiuni
+                self.addOption(opDeltaPrev, opVal)  # se adauga optiunea in coada de optiuni
 
-            if offset < len(data):       # se adauga restul mesajului in payload
-                self.__payload = data[offset + 1:len(data)]
+            if index < len(data):       # se adauga restul mesajului in payload
+                self.__payload = data[index + 1:len(data)]
