@@ -71,14 +71,15 @@ class Download(Command):
 
 
 class ListDirectory(Command):
-
+    """Displays all dirs from current path"""
     def __init__(self, path):
 
         super().__init__()
         print('\nListDirectory')
         self.message = msm.Message(CommunicationType, msm.Class.Method, msm.Method.GET)
 
-        self.message.addOption(msm.Options.LOCATION_PATH, path)
+        for item in path:
+            self.message.addOption(msm.Options.LOCATION_PATH, item)
 
 
 class GetData(Command):

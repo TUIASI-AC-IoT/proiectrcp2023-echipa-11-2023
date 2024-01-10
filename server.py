@@ -32,6 +32,8 @@ class Server:
                         msg = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)
                         msg.decode(msg_received)
                         # prin1
+                        if msg.messageCode == msm.Method.GET:
+                            msg.messageCode = msm.Success.Content
                         msg.displayMessage()
                         msg.addPayload(bytearray('Echo', encoding="ascii"))
                         send = msg.encode()
