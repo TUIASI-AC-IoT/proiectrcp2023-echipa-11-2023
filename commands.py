@@ -47,6 +47,7 @@ class Rename(Command):
 
         self.message.addPayload(bytearray(new_name, 'ascii'))
 
+
 class Move(Command):
 
     def __init__(self, path):
@@ -74,7 +75,7 @@ class ListDirectory(Command):
     def __init__(self, path):
 
         super().__init__()
-
+        print('\nListDirectory')
         self.message = msm.Message(CommunicationType, msm.Class.Method, msm.Method.GET)
 
         self.message.addOption(msm.Options.LOCATION_PATH, path)
