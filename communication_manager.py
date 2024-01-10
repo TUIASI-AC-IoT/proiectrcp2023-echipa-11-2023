@@ -41,8 +41,23 @@ class CommunicationManager:
         self.commandQ = commandQ
         self.eventQ = eventQ
 
+        self.lock = threading.Lock()
+
+        self.requestList = list()
+        self.delayedRequest = list()
+        self.blockRequest = list()
+        self.requestQ = queue.Queue()
+
+        self.receivedBlock = list()
+
+        self.sentBlock = list()
+
+
+
+
     def request(self, message):
-        self.__socket.sendto(message, self.address)
+        with self.lock:
+            self.__socket.sendto(message, self.address)
 
     def response(self, message):
         pass
