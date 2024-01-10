@@ -41,26 +41,38 @@ class CommunicationManager:
         self.commandQ = commandQ
         self.eventQ = eventQ
 
+        self.sendLock = threading.Lock()
+
     def request(self, message):
-        self.__socket.sendto(message, self.address)
+        print('\nCommunicationManager, request')
+        # blocam threadul
+        with self.sendLock:
+            self.__socket.sendto(message, (serverIpAddress, serverPort))
 
     def response(self, message):
         pass
 
     def ComLis(self):
-        threading.Thread(target=self.Client(), daemon=True).start()
-        threading.Thread(target=self.commandListener(), daemon=True).start()
+        # threading.Thread(target=self.Client(), daemon=True).start()
+        threading.Thread(target=self.commandListener, daemon=True).start()
 
     def commandListener(self):
         print('\nComunicationManager, commandListener')
         """Takes the commands from commandQ and puts them in requestQ"""
         while True:
             # luam commanda din lista de comenzi
+            print('pingu?')
             command = self.commandQ.get()
+            print('com: ', command)
             # var: var_type = value, where type(value) is var_type
             message: msm.Message = command.details()    # extragem mesajul
 
-            self.request(message)
+            if not message.messageId:
+                message.addMessageID(1)
+            if not message.token:
+                message.addToken(0x1)
+            message.displayMessage()
+            self.request(message.encode())
 
             self.commandQ.task_done()
 

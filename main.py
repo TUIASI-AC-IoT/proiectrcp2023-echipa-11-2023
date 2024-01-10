@@ -7,7 +7,7 @@ import interface
 import communication_manager as cm
 from communication_manager import CommunicationManager as CM
 
-from server import ServerRun
+# from server import ServerRun
 # importul executa fisierul si stocheaza .pyc in pycache
 
 import message_manager as msm
@@ -50,16 +50,17 @@ if __name__ == '__main__':
 
     commandQ = queue.Queue()
     eventQ = queue.Queue()
-    # server part
-    threading.Thread(target=ServerRun, daemon=True).start()
+
+    # server part, rulam deocamdata separat
+    # threading.Thread(target=ServerRun, daemon=True).start()
 
     # client part
-    threading.Thread(target=Client, daemon=True).start()
+    # threading.Thread(target=Client, daemon=True).start()
 
     # command listener
     # de mutat clientul in communication manager
-    # cm = CM(commandQ, eventQ)
-    # cm.ComLis()
+    cm = CM(commandQ, eventQ)
+    cm.ComLis()
 
     GUI = interface.Window(commandQ, eventQ)
     GUI.title("CoAP - client")

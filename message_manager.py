@@ -154,6 +154,7 @@ class Message:
                 for b in bytes(value, 'ascii'):
                     message.append(b)
             else:
+                print(type(value), ': ', value)
                 for b in value:
                     message.append(b)
 

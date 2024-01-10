@@ -59,4 +59,4 @@ def ServerRun():
     server = Server('127.0.0.1', 5683)
     server.communication()
 
-# ServerRun()
+ServerRun()
