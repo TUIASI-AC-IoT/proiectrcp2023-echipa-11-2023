@@ -4,14 +4,14 @@ import threading
 import time
 
 import message_manager as msm
-import commands
+
 import random
 import queue
 
 
 serverIpAddress = '127.0.0.1'
 serverPort = 5683
-clientIpAddress = '127.0.0.1'
+clientIpAddress = '127.0.0.2'
 clientPort = 49153
 
 # Confirmable by default
@@ -100,6 +100,7 @@ class CommunicationManager:
             # salvam datele despre mesaj in lista de mesaje
             self.requestList.append((message, time.time(), self.TIMEOUT, self.MAX_RETRANSMIT))
             print(self.requestList)
+            self.commandQ.task_done()
 
     def responseListener(self):
         """Reads data, if is any data available on the socket => decodes the data and ads it to the response queue"""
