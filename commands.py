@@ -94,6 +94,7 @@ class Download(Command):
 
 class ListDirectory(Command):
 
+
     def __init__(self, path: list):
 
         super().__init__()
@@ -102,6 +103,8 @@ class ListDirectory(Command):
 
         for i in path:
             self.message.addOption(msm.Options.URI_PATH, i)
+
+        
 
 
 

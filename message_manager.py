@@ -52,15 +52,16 @@ class ServerError(Code):
 
 
 class Options(IntEnum):
-    LOCATION_PATH = 8
-    URI_PATH = 11
-    FORMAT = 12
-    ACCEPT = 17
-    BLOCK_1 = 27
-    BLOCK_2 = 23
+    LOCATION_PATH = 8   # used mostly in responses
+    URI_PATH = 11       # used in request and responses
+    FORMAT = 12         # format of the msg payload
+    ACCEPT = 17         # which format is acceptable to the client
+    BLOCK_1 = 27        # POST/PUT, used when sending a large payload to the server
+    BLOCK_2 = 23        # GET, used when requesting a large resource from the server
 
 
 class Content(IntEnum):
+    # to do: JSON
     TEXT_PLAIN = 0
     BYTES_STREAM = 42
 
@@ -153,6 +154,7 @@ class Message:
                 for b in bytes(value, 'ascii'):
                     message.append(b)
             else:
+                print(type(value), ': ', value)
                 for b in value:
                     message.append(b)
 

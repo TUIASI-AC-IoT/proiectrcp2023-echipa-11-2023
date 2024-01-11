@@ -29,6 +29,9 @@ class Window(tk.Tk):
         self.current_path = []
         self.current_path.append('')
 
+        # prima comanda e list directory
+        self.commmandQ.put(cmd.ListDirectory(self.current_path[0]))
+
         self.geometry("800x400")    # initial 800x200
         self.grid()
 
@@ -42,7 +45,7 @@ class Window(tk.Tk):
         self.__back.grid(column=0, row=0)
 
         # current path to directory
-        self.__path = tk.Label(self.__menu, text=f"Downloads/{self.current_path[0]}")
+        self.__path = tk.Label(self.__menu, text=f"Downloads/{''.join(self.current_path)}")
         self.__path.grid(column=1, row=0)
 
         # refresh button
@@ -242,10 +245,11 @@ class Window(tk.Tk):
     def Refresh(self):
         """Refresh"""
         print('\ninterface, Refresh')
-        self.commmandQ.put(cmd.ListDirectory(self.current_path))
+        self.commmandQ.put(cmd.ListDirectory(''.join(self.current_path)))
 
     def EventListener(self):
         print('\ninterface, EventListener')
         while True:
             event: events.Event = self.eventQ.get()
+            self.eventQ.task_done()
 
