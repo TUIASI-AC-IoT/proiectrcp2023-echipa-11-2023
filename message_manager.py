@@ -113,7 +113,6 @@ class Message:
         prevOption = 0
         for (option, value) in self.__options:
             valueLength = 0
-            # print(type(val.value))
             if type(value) is int:  # opaque integer (in block1 and 2)
                 if value != 0:
                     value_len = value
@@ -151,7 +150,7 @@ class Message:
                 prevOption = option
 
             # appending the value
-            if type(value) is str:
+            if isinstance(value, str):
                 for b in bytes(value, 'ascii'):
                     message.append(b)
             else:
@@ -166,6 +165,26 @@ class Message:
                 message.append(i)
 
         return message
+
+    def setToken(self, token):
+        self.token = token
+
+    def getOption(self, options: Options):
+        result = None
+        for (opt, value) in self.__options:
+            if opt == options:
+                result = value
+                break
+
+        return result
+
+    def getOptionList(self, options: Options):
+        result = list()
+        for(opt, value) in self.__options:
+            if opt == options:
+                result.append(value)
+
+        return result
 
     def addMessageID(self, msg_id):
         print('\nmessage_manager, addMessageID')
@@ -191,7 +210,7 @@ class Message:
             value = bytes(value, 'ascii')
         self.__options.append((option, value))
 
-    def addPayload(self, content: bytearray):
+    def addPayload(self, content: bytes):
         """Adds the paylaod"""
         print('\nmessage_manager, addPayload')
         self.__payload = content

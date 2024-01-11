@@ -42,11 +42,23 @@ class CommunicationManager:
         self.commandQ = commandQ
         self.eventQ = eventQ
 
+
         self.sendLock = threading.Lock()
 
         # coada pentru rasunsuri
         self.responseQ = queue.Queue()
 
+        self.lock = threading.Lock()
+
+        self.requestList = list()
+        self.delayedRequest = list()
+        self.blockRequest = list()
+        self.requestQ = queue.Queue()
+
+        self.receivedBlock = list()
+
+        self.sentBlock = list()
+   
         # lista pentru requesturi
         self.requestList = []
 

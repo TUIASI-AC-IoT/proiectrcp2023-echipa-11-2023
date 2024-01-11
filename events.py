@@ -5,11 +5,13 @@ class EventType(IntEnum):
     FILE_LIST = 0
     FILE_CONTENT = 1
     FILE_HEADER = 2
+    FILE_UPLOADED = 3
     CREATED_FOLDER = 4
     RENAMED_FILE = 5
     DELETED_FILE = 6
     FAILED_REQUEST = 7
     REQUEST_TIMEOUT = 8
+
 
 
 class Event:
