@@ -11,6 +11,8 @@ class Server:
         self.address = (ip, port)
         self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.__socket.bind(self.address)
+        self.files = 'dir:pingu|file:coco.txt|file:cica.txt'
+        self.path = 'pinguini/'
 
     def communication(self):
         try:
@@ -35,10 +37,8 @@ class Server:
                         if msg.messageCode == msm.Method.GET:
                             msg.messageCode = msm.Success.Content
                             msg.messageClass = msm.Class.Success
-                            files = 'dir:pingu|file:coco.txt|file:cica.txt'
-                            path = 'pinguini/'
-                            msg.addPayload(bytearray(files, 'ascii'))
-                            msg.addOption(8, bytearray(path, 'ascii'))
+                            msg.addPayload(bytearray(self.files, 'ascii'))
+                            msg.addOption(8, bytearray(self.path, 'ascii'))
                             send = msg.encode()
                             self.__socket.sendto(send, ('127.0.0.1', 49153))
                             continue
@@ -47,7 +47,28 @@ class Server:
                             msg.messageCode = msm.Success.Changed
                             msg.messageClass = msm.Class.Success
                             msg.displayMessage()
-                            pass
+                            oldF = msg.getOptionValue(msm.Options.LOCATION_PATH).decode()
+                            newF = msg.getPayload().decode()
+                            self.files = self.files.replace(oldF, newF)
+                            msg.emptyOptions()
+                            msg.emptyPayload()
+                            msg.addPayload(bytearray(self.files, 'ascii'))
+                            msg.addOption(8, bytearray(self.path, 'ascii'))
+                            send = msg.encode()
+                            self.__socket.sendto(send, ('127.0.0.1', 49153))
+                            continue
+                        if msg.messageCode == msm.Method.POST:
+                            msg.messageCode = msm.Success.Created
+                            msg.messageClass = msm.Class.Success
+                            newF = msg.getPayload().decode()
+                            self.files += '|'+newF
+                            msg.emptyOptions()
+                            msg.emptyPayload()
+                            msg.addPayload(bytearray(self.files, 'ascii'))
+                            msg.addOption(8, bytearray(self.path, 'ascii'))
+                            send = msg.encode()
+                            self.__socket.sendto(send, ('127.0.0.1', 49153))
+                            continue
                         msg.displayMessage()
                         msg.addPayload(bytearray('Echo', encoding="ascii"))
                         send = msg.encode()

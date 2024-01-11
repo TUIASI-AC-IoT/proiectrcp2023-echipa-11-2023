@@ -209,6 +209,12 @@ class Message:
             if opt[0] == option:
                 return opt[1]
 
+    def emptyPayload(self):
+        self.__payload = None
+
+    def emptyOptions(self):
+        self.__options = []
+
     def displayMessage(self):
         """Displays a Message object"""
         print('\nmessage_manager, displayMessage')

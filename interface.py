@@ -84,7 +84,7 @@ class Window(tk.Tk):
 
         # create directory
         """To do: add command"""
-        self.__createDir = tk.Button(self.__actions, text="Create directory", command=None)
+        self.__createDir = tk.Button(self.__actions, text="Create file/directory", command=self.create)
         self.__createDir.grid(column=0, row=0)
 
         # file upload button
@@ -107,6 +107,12 @@ class Window(tk.Tk):
             #     menu.add_command(label="Download", command=partial(self.__fileDownload, name))
             menu.tk_popup(event.x_root, event.y_root, 1)
 
+    def create(self):
+        name = simpledialog.askstring(title="New folder/file, syntax for dir\ndir:dir_name\nsyntax for "
+                                            "files:\nfile:file_name.ext", prompt='Enter name: ')
+        if name is not None:
+            self.commmandQ.put(cmd.Create(name))
+
     def rename(self, name, row, tmp):
         newName = simpledialog.askstring(title=name, prompt="Enter new name:", initialvalue=name)
         print(name)
@@ -115,8 +121,8 @@ class Window(tk.Tk):
 
         if newName is not None:
             path = self.current_path.copy()
-            # path.append(name)
-            self.commmandQ.put(cmd.Rename(path, temp))
+            path.append(name)
+            self.commmandQ.put(cmd.Rename(newName, name))
         else:
             messagebox.showerror("Error", "New name cannot be null")
 
@@ -149,9 +155,12 @@ class Window(tk.Tk):
                     else:
                         self.current_path.clear()
                         self.current_path.append('')
+                        print(1)
                         for item in path:
                             self.current_path.append(item)    # refacem calea actuala
                 elif path != '':
+                    self.current_path.clear()
+                    self.current_path.append('')
                     self.current_path.append(path)
                 print(self.current_path)
                 self.__path.configure(text='Dowloads/'.join(self.current_path))

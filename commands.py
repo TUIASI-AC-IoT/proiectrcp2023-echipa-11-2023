@@ -17,12 +17,13 @@ class Command:
 
 class Create(Command):
 
-    def __init__(self, path):
+    def __init__(self, name):
 
         super().__init__()
         self.message = msm.Message(CommunicationType, msm.Class.Method, msm.Method.POST)
 
-        self.message.addOption(msm.Options.LOCATION_PATH, path)
+        # self.message.addOption(msm.Options.LOCATION_PATH, path)
+        self.message.addPayload(bytearray(str(name), 'ascii'))
 
 
 class Upload(Command):
@@ -38,12 +39,11 @@ class Upload(Command):
 class Rename(Command):
     """Rename option"""
 
-    def __init__(self, path, new_name):
+    def __init__(self,new_name, old_name):
         super().__init__()
         self.message = msm.Message(CommunicationType, msm.Class.Method, msm.Method.PUT)
 
-        for item in path:
-            self.message.addOption(msm.Options.LOCATION_PATH, item)
+        self.message.addOption(msm.Options.LOCATION_PATH, old_name)
 
         self.message.addPayload(bytearray(str(new_name), 'ascii'))
 

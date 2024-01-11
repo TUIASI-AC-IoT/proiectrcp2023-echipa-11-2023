@@ -147,7 +147,23 @@ class CommunicationManager:
                 if request.messageCode == msm.Method.PUT and response.messageCode == msm.Success.Changed:
                     # file rename
                     print('rename')
+                    data = response.getPayload().decode()
+                    files1 = data.split('|')
+                    files2 = []
+                    for item in files1:
+                        files2.append(tuple(item.split(':')))
+                    path = response.getOptionValue(msm.Options.LOCATION_PATH).decode()
+                    self.eventQ.put(events.Event(events.EventType.FILE_LIST, (files2, path)))
 
+                if request.messageCode == msm.Method.POST and response.messageCode == msm.Success.Created:
+                    # create file event
+                    data = response.getPayload().decode()
+                    files1 = data.split('|')
+                    files2 = []
+                    for item in files1:
+                        files2.append(tuple(item.split(':')))
+                    path = response.getOptionValue(msm.Options.LOCATION_PATH).decode()
+                    self.eventQ.put(events.Event(events.EventType.FILE_LIST, (files2, path)))
 
 
 
