@@ -32,6 +32,7 @@ class Success(Code):
     Created = 1
     Deleted = 2
     Valid = 3
+    Changed = 4
     Content = 5
 
 
@@ -195,6 +196,18 @@ class Message:
         """Adds the paylaod"""
         print('\nmessage_manager, addPayload')
         self.__payload = content
+
+    def getPayload(self):
+        """Returns the payload"""
+        print('\nmessage_manager, getPayload')
+        return self.__payload
+
+    def getOptionValue(self, option: Options):
+        """Returns the option value of a given number"""
+        print('\nmessage_manager, getOptionValue')
+        for opt in self.__options:
+            if opt[0] == option:
+                return opt[1]
 
     def displayMessage(self):
         """Displays a Message object"""

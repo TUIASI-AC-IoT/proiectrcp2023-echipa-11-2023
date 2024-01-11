@@ -34,6 +34,20 @@ class Server:
                         # prin1
                         if msg.messageCode == msm.Method.GET:
                             msg.messageCode = msm.Success.Content
+                            msg.messageClass = msm.Class.Success
+                            files = 'dir:pingu|file:coco.txt|file:cica.txt'
+                            path = 'pinguini/'
+                            msg.addPayload(bytearray(files, 'ascii'))
+                            msg.addOption(8, bytearray(path, 'ascii'))
+                            send = msg.encode()
+                            self.__socket.sendto(send, ('127.0.0.1', 49153))
+                            continue
+                        if msg.messageCode == msm.Method.PUT:
+                            # modificam lista de fisiere pt rename
+                            msg.messageCode = msm.Success.Changed
+                            msg.messageClass = msm.Class.Success
+                            msg.displayMessage()
+                            pass
                         msg.displayMessage()
                         msg.addPayload(bytearray('Echo', encoding="ascii"))
                         send = msg.encode()
@@ -41,6 +55,7 @@ class Server:
                     except Exception as e:
                         # ceva ciudat aici la setarea versiunii?
                         # la decode in client da eroarea Invalid Version
+                        # resolved
                         msg = msm.Message(msm.Type.Reset, msm.Class.Server_Error, msm.Method.EMPTY)
                         msg.addMessageID(1)
                         msg.addToken(0x1)

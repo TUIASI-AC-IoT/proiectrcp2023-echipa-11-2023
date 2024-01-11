@@ -3,6 +3,7 @@ import socket
 import threading
 import time
 
+import events
 import message_manager as msm
 import commands
 import random
@@ -123,17 +124,33 @@ class CommunicationManager:
                 for msg in self.requestList:
                     if response.token == msg[0].token:
                         request = msg[0]       # am gasit requestul
+                        request.displayMessage()
                         break
                 if request is None:
                     continue    # nu am gasit requestul
-
+                response.displayMessage()
                 # triggering events based on responses
                 if response.messageClass == msm.Class.Success:  # response is SUCCESS
                     # REQUEST = GET and RESPONSE = SUCCESS.CONTENT  TODO: SUCCES.VALID
                     if request.messageCode == msm.Method.GET and response.messageCode == msm.Success.Content:
                         # optiunea content_format are valoarea plain text
-                        print('pinguinus')
-                        pass
+                        # luam din payload lista de fisiere/directoare
+                        print('print resposes')
+                        data = response.getPayload().decode()
+                        files1 = data.split('|')
+                        files2 = []
+                        for item in files1:
+                            files2.append(tuple(item.split(':')))
+                        path = response.getOptionValue(msm.Options.LOCATION_PATH).decode()
+                        self.eventQ.put(events.Event(events.EventType.FILE_LIST, (files2, path)))
+
+                if request.messageCode == msm.Method.PUT and response.messageCode == msm.Success.Changed:
+                    # file rename
+                    print('rename')
+
+
+
+
     # def Client(self):
     #
     #     message = msm.Message(msm.Type.Confirmable, msm.Class.Method, msm.Method.GET)

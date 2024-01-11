@@ -36,16 +36,16 @@ class Upload(Command):
 
 
 class Rename(Command):
+    """Rename option"""
 
     def __init__(self, path, new_name):
-
         super().__init__()
-
         self.message = msm.Message(CommunicationType, msm.Class.Method, msm.Method.PUT)
 
-        self.message.addOption(msm.Options.LOCATION_PATH, path)
+        for item in path:
+            self.message.addOption(msm.Options.LOCATION_PATH, item)
 
-        self.message.addPayload(bytearray(new_name, 'ascii'))
+        self.message.addPayload(bytearray(str(new_name), 'ascii'))
 
 
 class Move(Command):
